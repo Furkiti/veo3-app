@@ -1,0 +1,44 @@
+// cursor.config.json
+{
+    "project": {
+      "name": "veo3-video-generator",
+      "type": "fullstack",
+      "version": "0.1.0"
+    },
+    "editor": {
+      "formatOnSave": true,
+      "tabSize": 2,
+      "rulers": [80, 100],
+      "wordWrap": "on"
+    },
+    "language": {
+      "typescript": {
+        "strict": true,
+        "module": "ESNext"
+      },
+      "dart": {
+        "lineLength": 80
+      }
+    },
+    "lint": {
+      "typescript": {
+        "config": ".eslintrc.json",
+        "fix": true
+      },
+      "dart": {
+        "config": "analysis_options.yaml"
+      }
+    },
+    "promptProcessing": {
+      "rulesPath": "./ai.rules.json",
+      "validateBeforeSend": true,
+      "formatTurkishDialogue": true,
+      "enforceStructure": true
+    },
+    "paths": {
+      "backend": "./backend",
+      "frontend": "./frontend",
+      "rules": "./ai.rules.json",
+      "promptGuide": "./veo3promptrules.pdf"
+    }
+  }
