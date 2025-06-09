@@ -1,0 +1,81 @@
+{
+  "model": {
+    "name": "fal-ai/veo3",
+    "version": "latest",
+    "maxDuration": 8,
+    "resolution": "720p",
+    "aspectRatio": "16:9"
+  },
+  "promptRules": {
+    "general": {
+      "maxLength": 800,
+      "language": "English",
+      "requiresScene": true,
+      "requiresAction": true
+    },
+    "sceneComponents": {
+      "required": [
+        "camera_type",
+        "lighting",
+        "setting",
+        "main_action"
+      ],
+      "optional": [
+        "time_of_day",
+        "weather",
+        "mood",
+        "background_details"
+      ]
+    },
+    "cameraDirections": {
+      "types": [
+        "close-up",
+        "medium shot",
+        "wide shot",
+        "aerial view",
+        "tracking shot",
+        "dolly zoom",
+        "over-the-shoulder"
+      ],
+      "movements": [
+        "static",
+        "panning",
+        "tilting",
+        "following",
+        "zooming"
+      ],
+      "format": "{camera_type}, {movement} shot"
+    },
+    "audioRules": {
+      "types": {
+        "ambient": "Background sounds and atmosphere",
+        "music": "Background music or score",
+        "sfx": "Sound effects",
+        "dialogue": "Character speech"
+      },
+      "turkishDialogue": {
+        "prefix": "Audio: Character speaks in Turkish:",
+        "format": "\"{turkish_text}\"",
+        "example": "Audio: Character speaks in Turkish: \"Merhaba dünya\"",
+        "placement": "end_of_prompt"
+      },
+      "format": "Audio: {type}: {description}"
+    }
+  },
+  "restrictions": {
+    "forbidden_content": [
+      "violence",
+      "explicit_content",
+      "political_content",
+      "copyrighted_characters",
+      "brand_names",
+      "hate_speech",
+      "discrimination"
+    ],
+    "technical_limits": {
+      "min_words": 10,
+      "max_words": 200,
+      "max_characters": 800
+    }
+  }
+} 
