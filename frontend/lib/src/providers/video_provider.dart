@@ -31,7 +31,11 @@ class VideoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> generateVideo(String prompt) async {
+  Future<void> generateVideo(
+    String prompt, {
+    String? referenceImage,
+    String service = 'stable',
+  }) async {
     _status = VideoGenerationStatus.generating;
     _error = null;
     _progress = 0.0;
@@ -39,8 +43,19 @@ class VideoProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (kDebugMode) {
+        print('VideoProvider - Starting video generation');
+        print('VideoProvider - Prompt: $prompt');
+        print('VideoProvider - Using service: $service');
+        if (referenceImage != null) {
+          print('VideoProvider - Reference image included');
+        }
+      }
+
       final response = await _apiService.generateVideo(
         prompt,
+        service: service,
+        referenceImage: referenceImage,
         onProgress: (status, progress) {
           if (status == 'IN_PROGRESS') {
             // Her queue update'inde progress'i artır
@@ -55,10 +70,18 @@ class VideoProvider extends ChangeNotifier {
       _videoUrl = response['videoUrl'] as String;
       _status = VideoGenerationStatus.completed;
       _updateProgress(1.0, 'Video generation completed!');
+
+      if (kDebugMode) {
+        print('VideoProvider - Video URL: $_videoUrl');
+      }
     } catch (e) {
       _error = e.toString();
       _status = VideoGenerationStatus.error;
       _updateProgress(0.0, 'Error generating video');
+
+      if (kDebugMode) {
+        print('VideoProvider - Error: $_error');
+      }
     }
 
     notifyListeners();

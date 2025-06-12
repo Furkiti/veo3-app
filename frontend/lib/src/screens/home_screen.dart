@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../providers/video_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _promptController = TextEditingController();
   VideoPlayerController? _videoController;
   ChewieController? _chewieController;
+  String? _selectedImagePath;
+  String? _base64Image;
 
   @override
   void dispose() {
@@ -26,11 +31,27 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      final bytes = await image.readAsBytes();
+      setState(() {
+        _selectedImagePath = image.path;
+        _base64Image = base64Encode(bytes);
+      });
+    }
+  }
+
   Future<void> _generateVideo() async {
     if (!_formKey.currentState!.validate()) return;
 
     final videoProvider = context.read<VideoProvider>();
-    await videoProvider.generateVideo(_promptController.text);
+    await videoProvider.generateVideo(
+      _promptController.text,
+      referenceImage: _base64Image,
+    );
 
     if (videoProvider.status == VideoGenerationStatus.completed && mounted) {
       await _initializeVideo(videoProvider.videoUrl!);
@@ -54,25 +75,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProgressIndicator(VideoProvider provider) {
-    if (provider.status != VideoGenerationStatus.generating) {
-      return const SizedBox.shrink();
-    }
+    if (provider.status != VideoGenerationStatus.generating) return const SizedBox();
 
     return Column(
       children: [
-        const SizedBox(height: 24),
-        LinearProgressIndicator(
-          value: provider.progress,
-          backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).colorScheme.primary,
-          ),
-        ),
+        const SizedBox(height: 16),
+        LinearProgressIndicator(value: provider.progress),
         const SizedBox(height: 8),
         Text(
           provider.statusMessage,
-          style: Theme.of(context).textTheme.bodyMedium,
-          textAlign: TextAlign.center,
+          style: const TextStyle(fontStyle: FontStyle.italic),
         ),
       ],
     );
@@ -100,18 +112,55 @@ class _HomeScreenState extends State<HomeScreen> {
                       TextFormField(
                         controller: _promptController,
                         maxLines: 5,
+                        maxLength: 800,
                         decoration: const InputDecoration(
                           labelText: 'Video Description',
                           hintText: 'Describe the video you want to generate...',
                           border: OutlineInputBorder(),
+                          counterText: null,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a description';
                           }
+                          if (value.length > 800) {
+                            return 'Description cannot exceed 800 characters';
+                          }
                           return null;
                         },
+                        onChanged: (value) {
+                          setState(() {});
+                        },
                       ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          '${_promptController.text.length}/800 characters',
+                          style: TextStyle(
+                            color: _promptController.text.length > 800 
+                              ? Theme.of(context).colorScheme.error 
+                              : Theme.of(context).textTheme.bodySmall?.color,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _pickImage,
+                        icon: const Icon(Icons.image),
+                        label: const Text('Select Reference Image'),
+                      ),
+                      if (_selectedImagePath != null) ...[
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            File(_selectedImagePath!),
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: videoProvider.status == VideoGenerationStatus.generating
@@ -142,11 +191,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ],
-                if (_chewieController != null) ...[
+                if (videoProvider.videoUrl != null) ...[
                   const SizedBox(height: 24),
                   AspectRatio(
-                    aspectRatio: _videoController!.value.aspectRatio,
-                    child: Chewie(controller: _chewieController!),
+                    aspectRatio: 16 / 9,
+                    child: _chewieController != null
+                        ? Chewie(controller: _chewieController!)
+                        : const Center(child: CircularProgressIndicator()),
                   ),
                 ],
               ],

@@ -33,18 +33,23 @@ class ApiService {
 
   Future<Map<String, dynamic>> generateVideo(
     String prompt, {
+    String? referenceImage,
+    String service = 'stable',
     ProgressCallback? onProgress,
   }) async {
     try {
       if (kDebugMode) {
         print('ApiService - Sending prompt to backend: $prompt');
+        print('ApiService - Using service: $service');
+        if (referenceImage != null) {
+          print('ApiService - Reference image included');
+        }
       }
 
-      // Test için sabit bir prompt kullanalım
-      const testPrompt = 'medium shot, static shot frames a cow in a green field. The cow is grazing peacefully under natural lighting. Audio: Gentle countryside ambiance with birds chirping';
-
       final response = await _dio.post('/video/generate', data: {
-        'prompt': testPrompt, // Test prompt'unu kullan
+        'prompt': prompt,
+        'service': service,
+        if (referenceImage != null) 'referenceImage': referenceImage,
       });
 
       if (kDebugMode) {
@@ -73,7 +78,7 @@ class ApiService {
       if (kDebugMode) {
         print('ApiService - Unexpected error: $e');
       }
-      throw Exception('Failed to generate video: ${e.toString()}');
+      throw Exception('Failed to generate video: $e');
     }
   }
 
@@ -85,28 +90,32 @@ class ApiService {
     int currentPoll = 0;
     
     while (true) {
-      final statusResponse = await _dio.get('/video/status/$queueId');
-      final status = statusResponse.data['status'];
-      
-      // İlerlemeyi hesapla (0.0 - 1.0 arası)
-      currentPoll++;
-      double progress = currentPoll / totalPolls;
-      if (progress > 1) progress = 1;
-      
-      // Progress callback'i çağır
-      onProgress?.call(status, progress);
+      try {
+        final statusResponse = await _dio.get('/video/status/$queueId');
+        final status = statusResponse.data['status'];
+        
+        // İlerlemeyi hesapla (0.0 - 1.0 arası)
+        currentPoll++;
+        double progress = currentPoll / totalPolls;
+        if (progress > 1) progress = 1;
+        
+        // Progress callback'i çağır
+        onProgress?.call(status, progress);
 
-      if (status == 'COMPLETED') {
-        return statusResponse.data;
-      } else if (status == 'FAILED') {
-        throw Exception('Video generation failed');
-      }
+        if (status == 'COMPLETED') {
+          return statusResponse.data;
+        } else if (status == 'FAILED') {
+          throw Exception('Video generation failed');
+        }
 
-      // 15 saniye bekle
-      await Future.delayed(const Duration(seconds: 15));
-      
-      if (currentPoll >= totalPolls) {
-        throw Exception('Video generation timed out');
+        // 15 saniye bekle
+        await Future.delayed(const Duration(seconds: 15));
+        
+        if (currentPoll >= totalPolls) {
+          throw Exception('Video generation timed out');
+        }
+      } on DioException catch (e) {
+        throw Exception('Failed to check video status: ${e.message}');
       }
     }
   }

@@ -10,7 +10,7 @@ const videoService = new VideoService({
 });
 
 export const generateVideo = asyncHandler(async (req: Request, res: Response) => {
-  const { prompt, service = config.defaultService } = req.body;
+  const { prompt, service = config.defaultService, referenceImage } = req.body;
 
   // Validate prompt
   const validationError = validatePrompt(prompt);
@@ -22,7 +22,7 @@ export const generateVideo = asyncHandler(async (req: Request, res: Response) =>
   try {
     let result;
     if (service === 'veo3') {
-      result = await videoService.generateVideoWithVeo3(prompt);
+      result = await videoService.generateVideoWithVeo3(prompt, referenceImage);
     } else {
       result = await videoService.generateVideoWithStable(prompt);
     }

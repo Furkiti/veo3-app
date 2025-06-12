@@ -7,6 +7,7 @@ class VideoGenerationProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String? _videoUrl;
+  String? _base64Image;
 
   VideoGenerationProvider(this._apiService);
 
@@ -34,7 +35,11 @@ class VideoGenerationProvider extends ChangeNotifier {
       }
 
       // Send the formatted prompt to the API
-      final response = await _apiService.generateVideo(formattedPrompt);
+      final response = await _apiService.generateVideo(
+        formattedPrompt,
+        service: 'stable',
+        referenceImage: _base64Image,
+      );
       _videoUrl = response['videoUrl'];
 
       if (kDebugMode) {
