@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'src/providers/video_provider.dart';
 import 'src/screens/home_screen.dart';
+import 'src/constants/app_colors.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,23 +22,51 @@ class MyApp extends StatelessWidget {
         title: 'Veo3',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF6750A4),
+          colorScheme: ColorScheme(
             brightness: Brightness.light,
+            primary: AppColors.accentBlue,
+            onPrimary: Colors.white,
+            secondary: AppColors.charcoal,
+            onSecondary: Colors.white,
+            error: Colors.red,
+            onError: Colors.white,
+            background: AppColors.scaffoldLight,
+            onBackground: AppColors.textLight,
+            surface: AppColors.white,
+            onSurface: AppColors.textLight,
           ),
           useMaterial3: true,
-          textTheme: GoogleFonts.interTextTheme(
-            Theme.of(context).textTheme,
+          textTheme: GoogleFonts.robotoTextTheme(),
+          scaffoldBackgroundColor: AppColors.scaffoldLight,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: AppColors.white,
+            foregroundColor: AppColors.charcoal,
+            elevation: 0,
+            centerTitle: true,
           ),
         ),
         darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF6750A4),
+          colorScheme: ColorScheme(
             brightness: Brightness.dark,
+            primary: AppColors.accentBlue,
+            onPrimary: Colors.white,
+            secondary: AppColors.charcoal,
+            onSecondary: Colors.white,
+            error: Colors.red,
+            onError: Colors.white,
+            background: AppColors.scaffoldDark,
+            onBackground: AppColors.textDark,
+            surface: AppColors.charcoal,
+            onSurface: AppColors.textDark,
           ),
           useMaterial3: true,
-          textTheme: GoogleFonts.interTextTheme(
-            Theme.of(context).textTheme,
+          textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme),
+          scaffoldBackgroundColor: AppColors.scaffoldDark,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: AppColors.charcoal,
+            foregroundColor: AppColors.white,
+            elevation: 0,
+            centerTitle: true,
           ),
         ),
         localizationsDelegates: const [
