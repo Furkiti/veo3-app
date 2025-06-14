@@ -1,55 +1,65 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_icons.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
-  const CustomBottomNav({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const CustomBottomNav({super.key, required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.darkBg,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 16,
-            offset: const Offset(0, -2),
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            height: 68,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _NavItem(
+                  icon: AppIcons.aiTools,
+                  label: 'AI Tools',
+                  selected: currentIndex == 0,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onTap(0);
+                  },
+                  accent: false,
+                ),
+                _NavItem(
+                  icon: AppIcons.aiVideo,
+                  label: 'AI Video',
+                  selected: currentIndex == 1,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onTap(1);
+                  },
+                  accent: true,
+                ),
+                _NavItem(
+                  icon: AppIcons.profile,
+                  label: 'My Profile',
+                  selected: currentIndex == 2,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onTap(2);
+                  },
+                  accent: false,
+                ),
+              ],
+            ),
           ),
-        ],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.only(top: 8, bottom: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _NavItem(
-            icon: AppIcons.aiTools,
-            label: 'AI Tools',
-            selected: currentIndex == 0,
-            onTap: () => onTap(0),
-          ),
-          _NavItem(
-            icon: AppIcons.aiVideo,
-            label: 'AI Video',
-            selected: currentIndex == 1,
-            floating: true,
-            onTap: () => onTap(1),
-          ),
-          _NavItem(
-            icon: AppIcons.profile,
-            label: 'My Profile',
-            selected: currentIndex == 2,
-            onTap: () => onTap(2),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -59,49 +69,61 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
-  final bool floating;
+  final bool accent;
   final VoidCallback onTap;
-  const _NavItem({required this.icon, required this.label, required this.selected, this.floating = false, required this.onTap});
+  const _NavItem({required this.icon, required this.label, required this.selected, required this.onTap, this.accent = false});
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.accentBlue : AppColors.subtextGray;
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (floating)
-            Container(
-              margin: const EdgeInsets.only(bottom: 2),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.accentBlue.withOpacity(0.18),
-                    blurRadius: 16,
+    final Color activeColor = Color(0xFF007AFF);
+    final Color inactiveColor = Color(0xFF888888);
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: accent ? 80 : 68,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (selected && accent)
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.10),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: activeColor.withOpacity(0.45),
+                            blurRadius: 18,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  Icon(
+                    icon,
+                    size: accent ? 34 : 28,
+                    color: selected ? activeColor : inactiveColor,
                   ),
                 ],
               ),
-              child: Icon(icon, color: AppColors.accentBlue, size: 30),
-            )
-          else
-            Icon(icon, color: color, size: 26),
-          const SizedBox(height: 2),
-          Text(label, style: TextStyle(color: color, fontWeight: selected ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
-          if (selected && !floating)
-            Container(
-              margin: const EdgeInsets.only(top: 2),
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                color: AppColors.accentBlue,
-                shape: BoxShape.circle,
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? activeColor : inactiveColor,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 13,
+                ),
               ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
